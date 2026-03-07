@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>2.5d</title>
+  <link rel="stylesheet" type="text/css" href="index.css"/>
+  <link rel="stylesheet" type="text/css" href="frog-ui.css">
+  <script src="frog3d.js"></script>
+  <script src="frog-ui.js"></script>
+  <script src="scene-tech.js"></script>
+  <script src="scene-maze.js"></script>
+</head>
+<body>
+  <div style="width: 100%;height:100%;overflow: hidden;" id="canvasDiv" ></div>
+  <div id="menuBtn" class="eye-button" style="position:fixed;right:0px;top:0px;" onclick="toggleMenu()"></div>
+  <div id="menuPanel" class="menu">
+    <div class="menu-two-row">
+      <label for="gridSwitch">网格:</label>
+      <div id="gridSwitch"></div>
+    </div>
+    <div class="menu-two-row">
+      <label for="axisSwitch">轴:</label>
+      <div id="axisSwitch"></div>
+    </div>
+    <div class="menu-two-row">
+      <label for="unitVectorSwitch">单位向量:</label>
+      <div id="unitVectorSwitch"></div>
+    </div>
+    <div class="menu-two-row" id="mouseTraceControl">
+      <label for="mouseTraceSwitch">鼠标轨迹:</label>
+      <div id="mouseTraceSwitch"></div>
+    </div>
+    <div class="menu-two-row">
+      <label for="sceneSelect">场景:</label>
+      <select id="sceneSelect" name="scene" onchange="changeScene(this)">
+        <option value="blank">空白</option>
+        <option value="technology">科技</option>
+        <option value="maze">迷宫</option>
+        <option value="block-world">方块世界</option>
+        <option value="block-world" disabled>装修中...</option>
+      </select>
+    </div>
+    <div id="techSpaceControl" style="display: none;border: 1px solid gray; border-radius: 4px; padding: 5px;">
+      <button onclick="randomTech()">随机生成</button>
+    </div>
+    <div id="mazeSpaceControl" style="display: none;border: 1px solid gray; border-radius: 4px; padding: 5px;">
+      <button onclick="randomMaze()">随机迷宫</button>
+    </div>
+    
+  </div>
+  <script>
+    var options = null;
+    var handle3d = null;
+    var maze = null;
+
+    window.addEventListener('load', (event) => {
+      eyeButton(document.getElementById('menuBtn'));
+      handle3d = frog3d(document.getElementById('canvasDiv'), {});
+
+      toggleSwitch('#gridSwitch', {
+        checked: true,
+        width: 50,
+        height: 20,
+        onChange: function(checked){
+          if(checked){
+            handle3d.showGrid();
+          }else{
+            handle3d.hiddenGrid();
+          }
+        }
+      });
+
+      toggleSwitch('#axisSwitch', {
+        checked: true,
+        width: 50,
+        height: 20,
+        onChange: function(checked){
+          if(checked){
+            handle3d.showAxis();
+          }else{
+            handle3d.hiddenAxis();
+          }
+        }
+      });
+
+      toggleSwitch('#unitVectorSwitch', {
+        checked: true,
+        width: 50,
+        height: 20,
+        onChange: function(checked){
+          if(checked){
+            handle3d.showUnitVector();
+          }else{
+            handle3d.hiddenUnitVector();
+          }
+        }
+      });
+
+      toggleSwitch('#mouseTraceSwitch', {
+        checked: false,
+        width: 50,
+        height: 20,
+        onChange: function(checked){
+          if(checked){
+            handle3d.showMouseTrace();
+          }else{
+            handle3d.hiddenMouseTrace();
+          }
+        }
+      });
+
+      const sceneSelect = document.getElementById('sceneSelect');
+      sceneSelect.value = 'maze';
+      sceneSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    // 空白
+    const blankScene = {
+      options: {
+        xv: [1, 0],
+        yv: [0, 1],
+        style: {
+          background: '#FCFCFC', // 背景色
+          color: '#121212', // 前景色
+          grid: '#999999' // 网格颜色
+        } 
+      },
+      init: function(){
+        handle3d.refreshScene(blankScene.options);
+      },
+      destroy: function(){
+
+      }
+    };
+
+    const techSpace = {
+      options: {
+          xv: [1.6, 0.92],
+          yv: [-1, 0.64],
+          style: {
+              background: '#FCFCFC',
+              color: '#121212',
+              grid: '#cccccc'
+          }
+      },
+      init: function () {
+        handle3d.refreshScene(techSpace.options);
+        if(!techSpace.sceneHandler){
+          techSpace.sceneHandler = techScene();
+        }
+        document.getElementById('techSpaceControl').style.display = 'block';
+        randomTech();
+      },
+      destroy: function () {
+        document.getElementById('techSpaceControl').style.display = 'none';
+      }
+    };
+
+    function randomTech(){
+      handle3d.clear();
+      const topo = techSpace.sceneHandler.generateScene();
+      if(topo.lines){
+        for(let line of topo.lines){
+          handle3d.drawPath(line, {
+            width: 4,
+            gradient: ['#79bcff', '#d7aefe', '#ffe48c', '#ffdd70']
+          });
+        }
+      }
+      if(topo.nodes){
+        for(let node of topo.nodes){
+          handle3d.drawImage([node.x, node.y], node.img, 'center', '80%', 0.5);
+        }
+      }
+      handle3d.positionAdapt();
+    }
+
+    // 迷宫
+    const mazeSpace = {
+      options:{
+        xv: [1.11, 0.62],
+        yv: [-0.92, 0.6],
+        style: {
+          background: '#8BC34A',
+          color: '#FFFFFF',
+          grid: '#FFFFFF'
+        }
+      },
+      init: function(){
+        handle3d.refreshScene(mazeSpace.options);
+        if(!mazeSpace.sceneHandler){
+          mazeSpace.sceneHandler = mazeScene();
+        }
+        document.getElementById('mazeSpaceControl').style.display = 'block';
+        randomMaze();
+      },
+      destroy: function(){
+        document.getElementById('mazeSpaceControl').style.display = 'none';
+      }
+    };
+
+    function randomMaze(){
+      handle3d.clear();
+      const tiling = mazeSpace.sceneHandler.generateMaze(23, 23);
+      for(let t of tiling){
+        handle3d.drawImage([t.x * 100, t.y * 100], t.img, 'center', '80%', 1);
+      }
+      handle3d.positionAdapt();
+    }
+
+    const sceneMap = new Map();
+    sceneMap.set('blank', blankScene);
+    sceneMap.set('technology', techSpace);
+    sceneMap.set('maze', mazeSpace);
+    const currentSceneState = { activeScene: null };
+
+    /**
+     * 场景切换
+     */
+    function changeScene(dom){
+      if(currentSceneState.activeScene){
+        currentSceneState.activeScene.destroy();
+      }
+      const scene = dom.value;
+      const sceneObj = sceneMap.get(scene);
+      if(sceneObj){
+        currentSceneState.activeScene = sceneObj;
+        sceneObj.init();
+      }
+    }
+
+    /**
+     * 随机数字, 范围: [min, max]
+     */
+    function randomInt(min, max){
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /**
+     * 菜单显隐
+     */
+    function toggleMenu(){
+        let panel = document.getElementById("menuPanel");
+        if(panel.style.display == "none"){
+            panel.style.display = "block";
+        }else{
+            panel.style.display = "none";
+        }
+    }
+  </script>
+</body>
+</html>

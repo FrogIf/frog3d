@@ -1,0 +1,142 @@
+/* slider.css */
+.frog-slider .slider-track {
+  height: 4px;
+  background: #ddd;
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.frog-slider .slider-thumb {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #007bff;
+  border: 2px solid white;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: transform 0.1s;
+}
+
+.frog-slider .slider-thumb:active {
+  cursor: grabbing;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* toggle-switch.css */
+.frog-toggle-switch {
+  background: #ccc;
+  border: none;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  outline: none;
+  padding: 0;
+}
+
+.frog-toggle-switch[aria-checked="true"] {
+  background: #007bff;
+}
+
+.frog-toggle-switch > div {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.frog-toggle-switch:focus {
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.frog-collapsible {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: sans-serif;
+  width: 100%;
+}
+
+.frog-collapsible-header {
+  padding: 10px 14px;
+  background: #f8f9fa;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  color: #333;
+  user-select: none;
+}
+
+.frog-collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  padding: 0 14px;
+}
+
+.eye-button{
+    z-index: 10;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+.eye-button span{
+    width: 2px;
+    height: 2px;
+    position: absolute;
+}
+.eye-button span:nth-of-type(1){
+    right: 20%;
+    top: 20%;
+    background-color: #009E60;
+}
+.eye-button span:nth-of-type(2){
+    right: 50%;
+    top: 20%;
+    background-color: #FF5800;
+}
+.eye-button span:nth-of-type(3){
+    right: 80%;
+    top: 20%;
+    background-color: #FFD500;
+}
+.eye-button span:nth-of-type(4){
+    right: 20%;
+    top: 50%;
+    background-color: #C41E3A;
+}
+.eye-button span:nth-of-type(5){
+    right: 50%;
+    top: 50%;
+    background-color: #FFFFFF;
+}
+.eye-button span:nth-of-type(6){
+    right: 80%;
+    top: 50%;
+    background-color: #0051BA;
+}
+.eye-button span:nth-of-type(7){
+    right: 20%;
+    top: 80%;
+    background-color: #FFD500;
+}
+.eye-button span:nth-of-type(8){
+    right: 50%;
+    top: 80%;
+    background-color: #FF5800;
+}
+.eye-button span:nth-of-type(9){
+    right: 80%;
+    top: 80%;
+    background-color: #009E60;
+}

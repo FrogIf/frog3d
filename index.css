@@ -1,0 +1,120 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.menu {
+    right: 0px;
+    top: 0px;
+    position: fixed;
+    width: 220px;
+    border-radius: 5px;
+    background-color: rgba(191,191,191,0.4);
+    padding: 10px 10px;
+    max-height: 100vh;
+    overflow: hidden;
+    color: #696969;
+}
+.menu-btn {
+    background-color: darkgrey;
+    overflow: hidden;
+    z-index: 9999;
+    position: fixed;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    right: 5px;
+    top: 5px;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    opacity: 0.5;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 24px;
+    border: none;
+    outline: none; 
+}
+
+.menu-btn .icon-bar {
+  width: 100%;
+  height: 3px;
+  background-color: #121212;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.menu-btn:focus {
+  outline: 2px solid #005fcc;
+  outline-offset: 2px;
+}
+
+.menu-btn .icon-bar:nth-child(1) { transform: rotate(0); }
+.menu-btn .icon-bar:nth-child(2) { opacity: 1; }
+.menu-btn .icon-bar:nth-child(3) { transform: rotate(0); }
+
+.menu-btn.active .icon-bar:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+.menu-btn.active .icon-bar:nth-child(2) {
+  opacity: 0;
+}
+.menu-btn.active .icon-bar:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+.menu select{
+    width: 100px;
+    text-align: center;
+}
+.menu button {
+    width: 150px;
+    text-align: center;
+    opacity: 0.5;
+    border: none;
+    border-radius: 2px;
+    margin: 2px;
+    cursor: pointer;
+}
+
+.menu button:hover{
+    opacity: 0.7;
+}
+.menu select{
+    opacity: 0.5;
+    border: none;
+    border-radius: 2px;
+    margin: 2px;
+    cursor: pointer;
+}
+.menu select:hover{
+    opacity: 0.7;
+}
+.group-panel{
+    border: 1px solid gray; 
+    border-radius: 5px; 
+    padding: 5px; 
+    margin-top: 5px;
+    text-align: center;
+}
+
+.menu-items{
+    align-items: center;
+    display: flex;
+    flex-direction: column; 
+    gap: 10px;
+    padding: 5px 0px;
+}
+
+label{
+    font-size: 14px;
+}
+
+.menu-two-row {
+    align-items: center; 
+    padding: 5px;
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 2px;
+}
