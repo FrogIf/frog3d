@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>2.5d</title>
+  <title>frog3d</title>
   <link rel="stylesheet" type="text/css" href="index.css"/>
   <link rel="stylesheet" type="text/css" href="frog-ui.css">
   <script src="frog3d.js"></script>
   <script src="frog-ui.js"></script>
   <script src="scene-tech.js"></script>
   <script src="scene-maze.js"></script>
+  <script src="scene-block.js"></script>
 </head>
 <body>
   <div style="width: 100%;height:100%;overflow: hidden;" id="canvasDiv" ></div>
@@ -36,7 +37,7 @@
         <option value="technology">科技</option>
         <option value="maze">迷宫</option>
         <option value="block-world">方块世界</option>
-        <option value="block-world" disabled>装修中...</option>
+        <option value="other" disabled>装修中...</option>
       </select>
     </div>
     <div id="techSpaceControl" style="display: none;border: 1px solid gray; border-radius: 4px; padding: 5px;">
@@ -44,6 +45,9 @@
     </div>
     <div id="mazeSpaceControl" style="display: none;border: 1px solid gray; border-radius: 4px; padding: 5px;">
       <button onclick="randomMaze()">随机迷宫</button>
+    </div>
+    <div id="blockWordControl" style="display: none;border: 1px solid gray; border-radius: 4px; padding: 5px;">
+      <button onclick="randomBlock()">随机生成</button>
     </div>
     
   </div>
@@ -109,7 +113,7 @@
       });
 
       const sceneSelect = document.getElementById('sceneSelect');
-      sceneSelect.value = 'maze';
+      sceneSelect.value = 'block-world';
       sceneSelect.dispatchEvent(new Event('change', { bubbles: true }));
     });
 
@@ -198,6 +202,31 @@
       }
     };
 
+    // 方块世界
+    const blockSpace = {
+      options:{
+        xv: [0.8, 0.5],
+        yv: [-0.8, 0.5],
+        zHeight: 35,
+        style: {
+          background: '#8BC34A',
+          color: '#FFFFFF',
+          grid: '#FFFFFF'
+        }
+      },
+      init: function(){
+        handle3d.refreshScene(blockSpace.options);
+        if(!blockSpace.sceneHandler){
+          blockSpace.sceneHandler = blockScene({heightMultiplier: 8, scale: 15, baseOffset: -0.1});
+        }
+        document.getElementById('blockWordControl').style.display = 'block';
+        randomBlock();
+      },
+      destroy: function(){
+        document.getElementById('blockWordControl').style.display = 'none';
+      }
+    };
+
     function randomMaze(){
       handle3d.clear();
       const tiling = mazeSpace.sceneHandler.generateMaze(23, 23);
@@ -207,10 +236,32 @@
       handle3d.positionAdapt();
     }
 
+    function randomBlock(){
+      handle3d.clear();
+      const tiling = blockSpace.sceneHandler.randomTerrain(23, 23);
+      handle3d.batchDrawImage((index) => {
+        if(tiling.length > index){
+          const t = tiling[index];
+          return {
+            x: t.x * 40,
+            y: t.y * 40,
+            z: t.z,
+            img: t.img
+          };
+        }
+        return null;
+      }, 'center', '80%', 0.1);
+      // for(let t of tiling){
+      //   handle3d.drawImage([t.x * 40, t.y * 40, t.z], t.img, 'center', '80%', 0.1);
+      // }
+      handle3d.positionAdapt();
+    }
+
     const sceneMap = new Map();
     sceneMap.set('blank', blankScene);
     sceneMap.set('technology', techSpace);
     sceneMap.set('maze', mazeSpace);
+    sceneMap.set('block-world', blockSpace);
     const currentSceneState = { activeScene: null };
 
     /**

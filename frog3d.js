@@ -18,6 +18,7 @@ function frog3d(dom, options){
     gridLineType: 'dot', // solid - 实线; dot - 点线
     gapScale: 40,
     scale: 1,
+    zHeight: 1,  // 如果是三维坐标降为, 这个配置用于指示z方向向量长度
     style: {
       background: '#FCFCFC', // 背景色
       color: '#121212', // 前景色
@@ -260,32 +261,48 @@ function frog3d(dom, options){
   function renderImage(){
     if(points.length > 0){
       const ctx = config.ctx;
+      const layerToPoints = [];
       for(let pp of points){
-        if(!pp.imgReady){ continue; }
-        const coor = coordinateTransform(pp.x, pp.y);
-        // , hAlign: hAlign, vAlign: vAlign
-        let x = coor[0];
-        let y = coor[1];
-        const w = pp.img.width * pp.imgScale * config.scale;
-        const h = pp.img.height * pp.imgScale * config.scale;
-        let ns = parsePercentage(pp.hAlign);
-        if(pp.hAlign == 'center'){
-          x -= w/2;
-        }else if(pp.hAlign == 'right'){
-          x -= w;
-        }else if(ns){
-          x -= ns * w;
+        let index = 0;
+        if('z' in pp){
+          index = pp.z;
         }
-        ns = parsePercentage(pp.vAlign);
-        if(pp.vAlign == 'center'){
-          y -= h/2;
-        }else if(pp.vAlign == 'bottom'){
-          y -= h;
-        }else if(ns){
-          y -= ns * h;
+        while(layerToPoints.length <= index){
+          layerToPoints.push([]);
         }
-        ctx.drawImage(pp.img, x, y, w, h);
+        layerToPoints[index].push(pp);
       }
+
+      for(let ppList of layerToPoints){
+        for(let pp of ppList){
+          if(!pp.imgReady){ continue; }
+          const oz = ('z' in pp) ? pp.z : 0;
+          const coor = coordinateTransformXYZ(pp.x, pp.y, oz);
+          // , hAlign: hAlign, vAlign: vAlign
+          let x = coor[0];
+          let y = coor[1];
+          const w = pp.img.width * pp.imgScale * config.scale;
+          const h = pp.img.height * pp.imgScale * config.scale;
+          let ns = parsePercentage(pp.hAlign);
+          if(pp.hAlign == 'center'){
+            x -= w/2;
+          }else if(pp.hAlign == 'right'){
+            x -= w;
+          }else if(ns){
+            x -= ns * w;
+          }
+          ns = parsePercentage(pp.vAlign);
+          if(pp.vAlign == 'center'){
+            y -= h/2;
+          }else if(pp.vAlign == 'bottom'){
+            y -= h;
+          }else if(ns){
+            y -= ns * h;
+          }
+          ctx.drawImage(pp.img, x, y, w, h);
+        }
+      }
+      
     }
   }
 
@@ -666,6 +683,16 @@ function frog3d(dom, options){
   }
 
   /**
+   * 三维坐标变换, 将三维降为至二维
+   */
+  function coordinateTransformXYZ(x, y, z){
+    return [
+      (config.xv[0] * x + config.yv[0] * y /* + 0×z */) * config.scale + config.xOffset,
+      (config.xv[1] * x + config.yv[1] * y - config.zHeight * z) * config.scale + config.yOffset,
+    ];
+  }
+
+  /**
    * 坐标变换
    */
   function inverseCoordinateTransform(x, y){
@@ -710,21 +737,66 @@ function frog3d(dom, options){
     let m = imgCache.get(img);
     const x = coor[0];
     const y = coor[1];
+    let point = {
+        x, y, img:m, imgScale: scale, hAlign: hAlign, vAlign: vAlign, imgReady: false
+    };
+    if(coor.length > 2){
+      point.z = Math.floor(coor[2]);
+    }
     if(m){
-      points.push({
-        x, y, img:m, imgScale: scale, hAlign: hAlign, vAlign: vAlign, imgReady: true
-      });
+      point.imgReady = true;
+      points.push(point);
       render();
     }else{
       m = new Image();
       m.src = img;
-      const imgPoint = {x, y, img: m, imgScale: scale, hAlign: hAlign, vAlign: vAlign, imgReady: false};
-      points.push(imgPoint);
+      point.img = m;
+      points.push(point);
       m.onload = () => {
         imgCache.set(img, m);
-        imgPoint.imgReady = true;
+        point.imgReady = true;
         render();
       }
+    }
+  }
+
+  function batchAddPointImage(pointGenerate, hAlign = 'left', vAlign = 'top', scale = 1){
+    let p;
+    let count = 0;
+    let i = 0;
+    while((p = pointGenerate(i))){
+      i++;
+      const img = p.img;
+      let m = imgCache.get(img);
+      const x = p.x;
+      const y = p.y;
+      let point = {
+          x, y, img:m, imgScale: scale, hAlign: hAlign, vAlign: vAlign, imgReady: false
+      };
+      if('z' in p){
+        point.z = Math.floor(p.z);
+      }
+      if(m){
+        point.imgReady = true;
+        points.push(point);
+      }else{
+        count++;
+        m = new Image();
+        m.src = img;
+        point.img = m;
+        points.push(point);
+        m.onload = () => {
+          count--;
+          imgCache.set(img, m);
+          point.imgReady = true;
+          if(count == 0){
+            render();
+          }
+        }
+      }
+    }
+    if(count == 0){
+      render();
     }
   }
 
@@ -734,6 +806,7 @@ function frog3d(dom, options){
   }
 
   frogObj.drawImage = addPointImage;
+  frogObj.batchDrawImage = batchAddPointImage;
   frogObj.clear = function(){
     clear();
     config.xOffset = 0;
@@ -772,8 +845,8 @@ function frog3d(dom, options){
     const targetCenterX = sumX / count;
     const targetCenterY = sumY / count;
     
-    const realX = config.xv[0] * targetCenterX + config.yv[0] * targetCenterY;
-    const realY = config.xv[1] * targetCenterX + config.yv[1] * targetCenterY;
+    const realX = (config.xv[0] * targetCenterX + config.yv[0] * targetCenterY) * config.scale;
+    const realY = (config.xv[1] * targetCenterX + config.yv[1] * targetCenterY) * config.scale;
 
     config.xOffset = viewCenterX - realX;
     config.yOffset = viewCenterY - realY;
