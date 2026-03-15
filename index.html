@@ -238,7 +238,7 @@
 
     function randomBlock(){
       handle3d.clear();
-      const tiling = blockSpace.sceneHandler.randomTerrain(23, 23);
+      const tiling = blockSpace.sceneHandler.randomTerrain(50, 50);
       handle3d.batchDrawImage((index) => {
         if(tiling.length > index){
           const t = tiling[index];
