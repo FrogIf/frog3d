@@ -256,10 +256,10 @@ function blockScene(config){
                     points.push(obj);
                 }
 
-                if(p.z >= maxZ - 1 && Math.random() > 0.9){ // 栽树
+                if(p.z >= maxZ - 1 && Math.random() > 0.97){ // 栽树
                     insertTree(p.x, p.y, p.z, points);
                 }
-                 if(Math.random() > 0.95){ // 种草
+                 if(Math.random() > 0.97){ // 种草
                     points.push({ img: grass, x: p.x, y: p.y, z: p.z + 1 });
                 }
                 // 草块
